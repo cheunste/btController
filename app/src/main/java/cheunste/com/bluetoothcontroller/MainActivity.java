@@ -1,21 +1,16 @@
 package cheunste.com.bluetoothcontroller;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.os.Bundle;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import java.util.Set;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -23,6 +18,10 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends Activity {
 
@@ -36,6 +35,13 @@ public class MainActivity extends Activity {
     private Set<BluetoothDevice> pairedDevices;
     private ListView myListView;
     private ArrayAdapter<String> BTArrayAdapter;
+
+    private String LOG_TAG="MainActivity";
+
+    private BluetoothServerSocket serverSocket;
+    private BluetoothSocket btClient;
+    private BluetoothSocket btServer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,6 +182,32 @@ public class MainActivity extends Activity {
         Toast.makeText(getApplicationContext(),"Bluetooth turned off",
                 Toast.LENGTH_LONG).show();
     }
+
+    //Attemptss to connect to a device given a device and a UUID.
+    //Maybe if you know the UUID of the HC-05, you can just directly connect to it. Maybe....
+    private BluetoothSocket connect(BluetoothDevice device, UUID UID) throws IOException{
+        BluetoothSocket socket = null;
+
+        try{
+            socket=device.createRfcommSocketToServiceRecord(UID);
+            socket.connect();
+
+            return socket;
+
+        }
+        catch(IOException e){
+            //Close socket upon error
+            socket.close();
+            //Log error
+            Log.e("ERROR: "+e,LOG_TAG);
+
+        }
+
+        return null;
+
+    }
+
+
 
     @Override
     protected void onDestroy() {
